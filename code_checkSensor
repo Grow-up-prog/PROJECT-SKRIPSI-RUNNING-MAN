@@ -1,0 +1,25 @@
+//TEST SENSOR
+int ir1 = A1;
+int ir2 = A2;
+int ir3 = A3;
+int value1, value2, value3;
+
+void setup() {
+  pinMode(ir1, INPUT);
+  pinMode(ir2, INPUT);
+  pinMode(ir3, INPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  value1 = digitalRead(ir1);
+  Serial.print("SENSOR 1 = ");
+  Serial.println(value1);
+  value2 = digitalRead(ir2);
+  Serial.print("SENSOR 2 = ");
+  Serial.println(value2);
+  value3 = digitalRead(ir3);
+  Serial.print("SENSOR 3 = ");
+  Serial.println(value3);
+  delay(500);
+}
