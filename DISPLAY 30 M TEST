@@ -1,0 +1,93 @@
+//#include <SoftwareSerial.h>
+//SoftwareSerial lcd(4, 5); //rx tx
+//softwareserial1
+
+
+//receive data from nextion
+const int SWITCH_ON = 1;
+byte received_data[4];
+int dataReset;
+//detect sensor stopwatch
+//variabel nilai millis
+unsigned long millisSebelum;
+float milidetik, detik, menit, jam;
+//debounce
+int currentState1 = HIGH;
+int lastState1 = HIGH;
+int currentState2 = HIGH;
+int lastState2 = HIGH;
+//sensor
+int sensor1 = 7;
+int sensor2 = 6;
+int bendera1 = 0;
+int bendera2 = 0;
+void setup() {
+  pinMode(sensor1, INPUT_PULLUP);
+  pinMode(sensor2, INPUT_PULLUP);
+  Serial.begin(9600);//serial display
+  Serial1.begin(9600);//komunikasi
+}
+void loop() {
+  if (Serial1.available()) {
+    reset();
+    if (dataReset == 1) {
+      menit = 0;
+      detik = 0;
+      milidetik = 0;
+      lcdCMD("minute.val=", menit);
+      lcdCMD("second.val=", detik);
+      lcdCMD("milisecond.val=", milidetik);
+    }
+  }
+  stopWatch();
+  lcdCMD("sensor1.val=", digitalRead(sensor1));
+  lcdCMD("sensor2.val=", digitalRead(sensor2));
+  lcdCMD("minute.val=", menit);
+  lcdCMD("second.val=", detik);
+  lcdCMD("milisecond.val=", milidetik);
+}
+
+
+
+void lcdCMD(String cmd, int val) {
+  Serial1.print(cmd);
+  Serial1.print(val);
+  Serial1.write(0xff);
+  Serial1.write(0xff);
+  Serial1.write(0xff);
+}
+void stopWatch() {
+  currentState1 = digitalRead(sensor1);
+  currentState2 = digitalRead(sensor2);
+  if (lastState1 == HIGH && currentState1 == LOW) {
+    bendera1++;
+    bendera2 = 0;
+  }
+  lastState1 = currentState1;
+  if (bendera1 == 1) {
+    if (millis() >= millisSebelum + 100) {
+      milidetik++;
+      if (milidetik >= 10) {
+        milidetik = 0;
+        detik++;
+
+        if (detik >= 60) {
+          detik = 0;
+          menit++;
+        }
+      }
+      millisSebelum = millis();
+    }
+  }
+  if (lastState2 == HIGH && currentState2 == LOW) {
+    bendera2++;
+    bendera1 = 0; 
+  }
+  lastState2 = currentState2;
+}
+
+void reset() {
+  int reset = Serial1.readBytesUntil('\n', received_data, 4);
+  dataReset = received_data[0];
+  Serial.println(dataReset);
+  }
